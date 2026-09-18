@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JLL・JNL球団成績</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFFFF;
+  --surface:#FFFFFF;
+  --surface-2:#F4F5F2;
+  --ink:#131A14;
+  --ink-soft:#4A554C;
+  --ink-mute:#78826F;
+  --accent:#C97A0F;
+  --accent-ink:#5C3B0B;
+  --accent-bg:#FCEBC9;
+  --line:#E4E7DF;
+  --line-strong:#C7CCC0;
+  --win:#256B3B;
+  --loss:#A83B26;
+  --font-display:'Oswald',"Yu Gothic",'Hiragino Sans',sans-serif;
+  --font-body:'Inter',"Yu Gothic",'Hiragino Sans',sans-serif;
+}
+:root:not([data-theme="light"]){
+  @media (prefers-color-scheme: dark){
+    --bg:#101812;
+    --surface:#182018;
+    --surface-2:#1D261E;
+    --ink:#EDEFE6;
+    --ink-soft:#B4BFAD;
+    --ink-mute:#7E8A79;
+    --accent:#F0B429;
+    --accent-ink:#3A2703;
+    --accent-bg:#3A2E10;
+    --line:#2A342A;
+    --line-strong:#3A463A;
+    --win:#5FBF7F;
+    --loss:#E06A50;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101812;
+  --surface:#182018;
+  --surface-2:#1D261E;
+  --ink:#EDEFE6;
+  --ink-soft:#B4BFAD;
+  --ink-mute:#7E8A79;
+  --accent:#F0B429;
+  --accent-ink:#3A2703;
+  --accent-bg:#3A2E10;
+  --line:#2A342A;
+  --line-strong:#3A463A;
+  --win:#5FBF7F;
+  --loss:#E06A50;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:15px;
+  line-height:1.6;
+}
+::selection{background:var(--accent-bg);color:var(--accent-ink);}
+a{color:inherit;}
+button{font-family:inherit;}
+
+.page{max-width:980px;margin:0 auto;padding:0 20px 80px;}
+
+.masthead{
+  padding:28px 20px 20px;
+  max-width:980px;
+  margin:0 auto;
+}
+.masthead-row{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.wordmark{
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:clamp(26px,4vw,36px);
+  letter-spacing:0.02em;
+  margin:0;
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+}
+.wordmark .lg{color:var(--accent);}
+.masthead-sub{color:var(--ink-soft);font-size:13.5px;margin:4px 0 0;}
+.masthead-note{
+  font-size:12.5px;color:var(--ink-mute);border-left:2px solid var(--line-strong);
+  padding-left:10px;max-width:260px;
+}
+
+.tabbar{
+  display:flex;gap:4px;border-bottom:1px solid var(--line);
+  max-width:980px;margin:18px auto 0;padding:0 20px;
+  overflow-x:auto;
+}
+.tabbar button{
+  background:none;border:none;border-bottom:2px solid transparent;
+  color:var(--ink-soft);font-size:14.5px;font-weight:500;
+  padding:10px 14px;cursor:pointer;white-space:nowrap;
+  font-family:var(--font-display);letter-spacing:0.02em;
+}
+.tabbar button:hover{color:var(--ink);}
+.tabbar button.active{color:var(--ink);border-bottom-color:var(--accent);}
+
+.leaguebar{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 6px;}
+.leaguebtn{
+  border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-soft);
+  padding:6px 14px;border-radius:999px;font-size:13px;font-weight:500;cursor:pointer;
+}
+.leaguebtn.active{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+
+.seasonbar{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 22px;}
+.seasonbtn{
+  border:1px solid var(--line);background:var(--surface-2);color:var(--ink-soft);
+  padding:7px 13px;border-radius:8px;font-size:13px;cursor:pointer;
+}
+.seasonbtn.active{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600;}
+.seasonbtn .flag{font-size:11px;opacity:0.85;}
+
+.season-heading{display:flex;align-items:baseline;gap:10px;margin:0 0 4px;flex-wrap:wrap;}
+.season-heading h2{font-family:var(--font-display);font-size:22px;font-weight:600;margin:0;letter-spacing:0.01em;}
+.season-heading .tag{
+  font-size:11.5px;color:var(--loss);border:1px solid var(--loss);border-radius:6px;
+  padding:2px 7px;font-weight:600;
+}
+.season-meta{color:var(--ink-mute);font-size:13px;margin:0 0 18px;}
+
+table.standings{width:100%;border-collapse:collapse;font-size:14px;}
+table.standings th{
+  text-align:left;font-size:11.5px;color:var(--ink-mute);font-weight:500;
+  padding:0 10px 8px;border-bottom:1px solid var(--line-strong);
+}
+table.standings th.num,table.standings td.num{text-align:right;font-variant-numeric:tabular-nums;}
+table.standings tbody tr{
+  cursor:pointer;border-bottom:1px solid var(--line);
+}
+table.standings tbody tr:hover{background:var(--surface-2);}
+table.standings td{padding:12px 10px;vertical-align:middle;}
+td.rankcol{width:28px;color:var(--ink-mute);font-family:var(--font-display);font-size:15px;}
+.teamcell{display:flex;align-items:center;gap:10px;}
+.swatch{width:8px;height:26px;border-radius:2px;flex:none;}
+.teamname{font-weight:600;font-size:14.5px;}
+.teamname .arrow{color:var(--ink-mute);font-weight:400;font-size:12px;margin-left:5px;}
+.manager{color:var(--ink-soft);font-size:12.5px;}
+.manager.masked{font-style:italic;color:var(--ink-mute);}
+td.pct{font-weight:700;font-variant-numeric:tabular-nums;}
+.media-dot{
+  display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);
+  margin-left:6px;vertical-align:middle;
+}
+
+.panel-overlay{
+  position:fixed;inset:0;background:rgba(10,15,10,0.5);
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:40px 16px;overflow-y:auto;z-index:50;
+}
+.panel{
+  background:var(--surface);border-radius:12px;max-width:640px;width:100%;
+  padding:26px 26px 28px;border:1px solid var(--line);
+}
+.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px;}
+.panel-title{display:flex;align-items:center;gap:10px;}
+.panel-title .swatch{width:10px;height:34px;}
+.panel-title h3{font-family:var(--font-display);font-size:22px;margin:0;font-weight:600;}
+.panel-close{
+  background:none;border:1px solid var(--line-strong);border-radius:8px;color:var(--ink-soft);
+  width:30px;height:30px;cursor:pointer;font-size:16px;line-height:1;flex:none;
+}
+.panel-sub{color:var(--ink-mute);font-size:13px;margin:2px 0 18px;}
+
+.stintlist{list-style:none;margin:0 0 20px;padding:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+.stintlist li{
+  display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;
+  padding:10px 14px;border-bottom:1px solid var(--line);font-size:13.5px;
+}
+.stintlist li:last-child{border-bottom:none;}
+.stintlist .st-team{font-weight:600;}
+.stintlist .st-note{color:var(--ink-mute);font-size:11.5px;display:block;font-weight:400;}
+.stintlist .st-manager{color:var(--ink-soft);font-size:12.5px;}
+.stintlist .st-rec{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;}
+
+.totalbox{
+  display:flex;justify-content:space-between;align-items:center;background:var(--surface-2);
+  border-radius:10px;padding:12px 16px;margin-bottom:22px;font-size:13.5px;
+}
+.totalbox .big{font-family:var(--font-display);font-size:24px;font-weight:600;}
+
+.media-block{border-top:1px solid var(--line);padding-top:16px;}
+.media-block h4{font-family:var(--font-display);font-size:14px;font-weight:600;margin:0 0 10px;letter-spacing:0.02em;color:var(--ink-soft);}
+.media-eval{margin-bottom:16px;}
+.media-eval:last-child{margin-bottom:0;}
+.media-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;}
+.rankpill{
+  background:var(--accent-bg);color:var(--accent-ink);font-size:12px;font-weight:700;
+  padding:3px 10px;border-radius:999px;
+}
+.evaluator{color:var(--ink-mute);font-size:12px;}
+.statrow{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft);margin-bottom:8px;}
+.statrow b{color:var(--ink);font-weight:600;}
+.keyplayers{font-size:12px;color:var(--ink-mute);margin-bottom:8px;}
+.media-comment{font-size:13.5px;color:var(--ink-soft);line-height:1.75;white-space:pre-wrap;}
+.no-media{color:var(--ink-mute);font-size:13px;font-style:italic;}
+
+.teamgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:16px;}
+.teamcard{
+  background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  cursor:pointer;text-align:left;padding:0;
+}
+.teamcard:hover{border-color:var(--line-strong);}
+.teamcard .bar{height:6px;}
+.teamcard .body{padding:14px 16px 16px;}
+.teamcard .name{font-family:var(--font-display);font-size:17px;font-weight:600;margin:0 0 4px;}
+.teamcard .stat{color:var(--ink-mute);font-size:12px;}
+
+.detail-head{display:flex;align-items:center;gap:12px;margin:24px 0 4px;}
+.detail-head .swatch{width:10px;height:38px;}
+.detail-head h2{font-family:var(--font-display);font-size:26px;margin:0;font-weight:600;}
+.backlink{
+  background:none;border:none;color:var(--ink-mute);font-size:13px;cursor:pointer;
+  padding:0;margin-bottom:14px;display:inline-flex;align-items:center;gap:5px;
+}
+.backlink:hover{color:var(--ink);}
+
+.summarystrip{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 22px;}
+.sumcard{background:var(--surface-2);border-radius:10px;padding:10px 16px;min-width:100px;}
+.sumcard .lbl{font-size:11px;color:var(--ink-mute);}
+.sumcard .val{font-family:var(--font-display);font-size:20px;font-weight:600;}
+
+table.history{width:100%;border-collapse:collapse;font-size:13.5px;margin-bottom:26px;}
+table.history th{text-align:left;font-size:11px;color:var(--ink-mute);font-weight:500;padding:0 10px 8px;border-bottom:1px solid var(--line-strong);}
+table.history td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top;}
+table.history tr.clickable{cursor:pointer;}
+table.history tr.clickable:hover{background:var(--surface-2);}
+table.history td.num{text-align:right;font-variant-numeric:tabular-nums;}
+.leaguechip{
+  font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;
+  background:var(--surface-2);color:var(--ink-soft);border:1px solid var(--line);
+}
+
+.managerlist{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+.managerchip{
+  background:var(--surface);border:1px solid var(--line);border-radius:999px;
+  padding:6px 14px;font-size:13px;cursor:pointer;
+}
+.managerchip:hover{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-bg);}
+
+.searchbox{
+  width:100%;max-width:340px;padding:9px 13px;border:1px solid var(--line-strong);
+  border-radius:8px;background:var(--surface);color:var(--ink);font-size:14px;margin:14px 0 4px;
+}
+.searchbox:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.hint{font-size:12px;color:var(--ink-mute);margin-bottom:16px;}
+
+.sectiontitle{font-family:var(--font-display);font-size:20px;font-weight:600;margin:0 0 4px;}
+.sectiondesc{color:var(--ink-soft);font-size:13.5px;margin:0 0 4px;}
+
+.titles-section{margin-top:26px;}
+.titles-section h3{font-family:var(--font-display);font-size:16px;font-weight:600;margin:0 0 10px;}
+.titlegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;}
+.titlecard{background:var(--surface-2);border-radius:10px;padding:12px 14px;}
+.titlecard .ttl-label{font-size:11px;color:var(--ink-mute);margin-bottom:6px;}
+.titlecard .ttl-team{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;}
+.titlecard .ttl-team .swatch{width:8px;height:20px;}
+.titlecard .ttl-manager{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+.titlecard .ttl-manager.masked-link{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;}
+.titlecard.cancelled{color:var(--ink-mute);font-size:13px;font-style:italic;}
+
+.achievements{margin:14px 0 22px;}
+.achievements h3{font-family:var(--font-display);font-size:16px;font-weight:600;margin:0 0 8px;}
+.achv-row{
+  display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface-2);
+  border-radius:8px;margin-bottom:6px;font-size:13px;
+}
+.achv-row .achv-badge{
+  font-size:11px;font-weight:700;color:var(--accent-ink);background:var(--accent-bg);
+  padding:2px 8px;border-radius:6px;
+}
+
+.managergrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:14px;}
+.managercard{
+  background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:14px 16px;cursor:pointer;text-align:left;
+}
+.managercard:hover{border-color:var(--line-strong);}
+.managercard .name{font-family:var(--font-display);font-size:16px;font-weight:600;margin:0 0 4px;}
+.managercard .stat{color:var(--ink-mute);font-size:12px;}
+
+.schedule-box{background:var(--surface-2);border-radius:10px;padding:14px 18px;margin:4px 0 22px;}
+.schedule-row{display:flex;gap:12px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:13px;}
+.schedule-row:last-child{border-bottom:none;}
+.schedule-row .lbl{width:150px;flex:none;color:var(--ink-mute);font-size:12px;padding-top:1px;}
+.schedule-row .val{color:var(--ink-soft);}
+.schedule-note{margin:8px 0 0;font-size:12px;color:var(--ink-mute);font-style:italic;}
+
+.disclaimer-box{
+  background:var(--surface-2);border-radius:10px;padding:12px 16px;
+  font-size:12.5px;color:var(--ink-soft);line-height:1.7;margin:14px 0 22px;
+}
+.intro-note{font-size:13px;color:var(--ink-mute);font-style:italic;margin:0 0 18px;}
+.cancelled-note{color:var(--ink-mute);font-style:italic;font-size:13.5px;padding:20px 0;}
+.award-section{margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--line);}
+.award-section:last-child{border-bottom:none;}
+.award-section h4{font-family:var(--font-display);font-size:15px;font-weight:600;margin:0 0 4px;}
+.award-subheading{font-size:12px;color:var(--ink-mute);margin:0 0 10px;}
+.award-sub{margin-bottom:12px;}
+.award-sub:last-child{margin-bottom:0;}
+.award-sub-label{font-size:12.5px;font-weight:600;color:var(--accent-ink);background:var(--accent-bg);display:inline-block;padding:2px 9px;border-radius:6px;margin-bottom:6px;}
+.award-winner{display:flex;align-items:baseline;gap:8px;padding:3px 0;font-size:13.5px;flex-wrap:wrap;}
+.award-winner .swatch{width:6px;height:14px;border-radius:2px;flex:none;align-self:center;}
+.award-winner .wname{font-weight:600;}
+.award-winner .wteam{color:var(--ink-mute);font-size:12px;}
+.award-winner .wnote{color:var(--ink-mute);font-size:11.5px;}
+.award-groupnote{font-size:11.5px;color:var(--ink-mute);font-style:italic;margin:2px 0 0;}
+.bestnine-grid{display:flex;flex-direction:column;gap:2px;}
+
+@media (max-width:560px){
+  table.standings td{padding:10px 6px;}
+  .manager{display:none;}
+  .stintlist li{grid-template-columns:1fr auto;}
+  .stintlist .st-manager{grid-column:1 / -1;}
+  .schedule-row{flex-direction:column;gap:2px;}
+  .schedule-row .lbl{width:auto;}
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-row">
+    <h1 class="wordmark"><span class="lg">JLL</span>・<span class="lg">JNL</span>球団成績</h1>
+    <p class="masthead-note">Roblox HCBBのJLL・JNL両リーグ、球団成績と球団評価のアーカイブ</p>
+  </div>
+  <p class="masthead-sub">シーズンごとの順位、球団の歴代成績・監督、開幕前メディア評価をまとめて見られます。</p>
+</header>
+
+<nav class="tabbar" id="tabbar">
+  <button data-view="season">シーズン成績</button>
+  <button data-view="teams">球団一覧</button>
+  <button data-view="managers">監督</button>
+  <button data-view="titles">個人タイトル</button>
+</nav>
+
+<main class="page" id="app"></main>
+
+<script>
+const TEAMS = {
+  tigers:   {name:"タイガース",   color:"#E3B23C"},
+  giants:   {name:"ジャイアンツ", color:"#E07B23"},
+  baystars: {name:"ベイスターズ", color:"#1F63B0"},
+  swallows: {name:"スワローズ",   color:"#2E8B4E"},
+  dragons:  {name:"ドラゴンズ",   color:"#4FA3D1"},
+  carp:     {name:"カープ",       color:"#D23B2E"},
+  hawks:    {name:"ホークス",     color:"#D9A600"},
+  lions:    {name:"ライオンズ",   color:"#17264F"},
+  fighters: {name:"ファイターズ", color:"#22ABC4"},
+  buffaloes:{name:"バッファローズ",color:"#26221E"},
+  marines:  {name:"マリーンズ",   color:"#2E3540"},
+  eagles:   {name:"イーグルス",   color:"#C1451F"},
+  braves:   {name:"ブレーブス",   color:"#E8C24A"},
+  phoenix:  {name:"フェニックス",  color:"#C4272C"}
+};
+
+function st(team, manager, games, wins, losses, note){
+  return {team, manager, games, wins, losses, note: note || null};
+}
+function ent(id, stints, media){
+  return {id, stints, media: media || null};
+}
+
+const SEASONS = [
+{
+  league:"JLL", key:"s1", label:"JLL S1", suspended:false, teamCountNote:"4球団制",
+  schedule:{
+    regularSeason:"2025年4月28日～6月9日",
+    cs:"2025年6月14日～6月17日",
+    japanSeries:"2025年6月20日～6月23日",
+    allStar:"実施なし"
+  },
+  champions:{
+    leagueChamp:{team:"giants",manager:"daibko"},
+    csChamp:{team:"eagles",manager:"amanekkoyumeneko"},
+    jsChamp:{team:"giants",manager:"daibko"}
+  },
+  entries:[
+    ent("jll-s1-eagles", [st("eagles","amanekkoyumeneko",30,9,21)], {
+      evaluator:"siiitake", rank:"3位予想",
+      stats:[["打撃","B-"],["投球","B"],["稼働","B"]],
+      comment:"このチームはどれにしてもあと1つ足りないチームとなっている。打者ではbotknが傑出した成績を残しているが、他が続かない。あともう1人傑出したバッターが出れば、大きな力をもったチームとなるだろう。海外選手ではHongthateverything,Roistybt,617mon2と優秀な打撃・投球をこなせる選手を獲得したが、日本人選手がそのアドバンテージを活かしきれてない。序盤は打線が好調で勝ちもついてきている状況だったが、やはり打撃面での課題が多い。投球ではRyryが3勝をあげているが、後半戦も好調を保てれるのかは疑問に思う。日本人選手の打撃が好調になれば、再び返り咲くことも可能であろう。"
+    }),
+    ent("jll-s1-giants", [st("giants","daibko",30,27,3)], {
+      evaluator:"siiitake", rank:"1位予想",
+      stats:[["打撃","A"],["投球","S"],["稼働","A+"]],
+      comment:"このチームは絶好調である。投手・打撃陣ともにまとまった良いチームをdaibkoは作り上げた。打撃ではsignのkillisameが新人王レベルの活躍を見せ、AriyaGX,Ros5e_0がドラフト選手らしい活躍で打線を牽引している。また、海外選手のAdelie_TRはチームトップの活躍を見せており、存在だけで頼もしい存在となっている。投手ではAPBLでサイ・ヤング賞を獲得したRos5e_0やAriyaGX、海外選手のBeynlord、signのsiiitakeといった強力な投手陣がいて、控えにはqoota_sab2等の投手が控えている。active率も高く、後半戦に大崩れする可能性は低いだろう。"
+    }),
+    ent("jll-s1-lions", [st("lions","aozoraSKYLINE",30,7,23)], {
+      evaluator:"siiitake", rank:"最下位予想",
+      stats:[["打撃","C"],["投球","C+"],["稼働","C"]],
+      comment:"酷いチームだ。稼働率も少なく、目立った成績を残している選手がいない。打撃ではバットに当たる音より審判の三振コールの方が聞き馴染みがあるだろう。投手では海外選手のChungsal2やaozoraskyline、matsutaiがふんばりを見せているが得点が入らず相手打線に力負けしてしまう試合が多い。signで316fn100を獲得したが思うような打撃成績は残せず、チーム状況に呑まれている。守備でのミスが非常に多く、得点が取れないのに相手に点を与えてしまっている状況になっている。稼働率も悪く、fftになった回数も4チームの中で一番多くなってしまっている。この状況を打破するには、良い打者をsignするか、トレードで打てる選手を獲得するしか方法はないだろう。"
+    }),
+    ent("jll-s1-slot1", [
+      st("baystars","※掲載自粛",12,5,7),
+      st("dragons","※掲載自粛",11,6,5,"ベイスターズから球団変更"),
+      st("swallows","※掲載自粛",7,6,1,"ドラゴンズから球団変更")
+    ], {
+      evaluator:"siiitake", rank:"2位予想",
+      stats:[["打撃","B+(海外S)"],["投球","B+"],["稼働","A"]],
+      comment:"意外と苦戦を強いられている。ドラフト1位のAkkanwakinがrtpにより失われ、打撃はfv4xmeiと海外選手に頼らざるを得ない状況となっている。signではasialeague新人王のMikazuki_Rikuを獲得したが、それでも打線の繋がりは見えてこない。投手ではfv4xmeiや海外選手のW1tnightsが主に活躍しているが、先発・中継ぎの枚数が少ない。直近ではabjが良い投球を見せたが、もっと他の選手が台頭してくる必要があるだろう。しかし、海外選手を含めたベストメンバーでは屈指の強さを誇るため、後半戦に期待がかかるチームである。（開幕前評価時点のチーム名：ベイスターズ）"
+    })
+  ]
+},
+{
+  league:"JLL", key:"s2", label:"JLL S2", suspended:false, teamCountNote:"4球団制",
+  schedule:{
+    regularSeason:"2025年7月7日～7月25日、7月31日～8月18日",
+    cs:"2025年8月21日～8月26日",
+    japanSeries:"2025年8月29日～9月3日",
+    allStar:"2025年7月29日"
+  },
+  champions:{
+    leagueChamp:{team:"fighters",manager:"4tvzz"},
+    csChamp:{team:"tigers",manager:"※非公開"},
+    jsChamp:{team:"fighters",manager:"4tvzz"}
+  },
+  entries:[
+    ent("jll-s2-marines", [st("marines","amanekkoyumeneko",30,14,16)]),
+    ent("jll-s2-fighters", [st("fighters","4tvzz",30,23,7)]),
+    ent("jll-s2-tigers", [st("tigers","※掲載自粛",30,12,18)]),
+    ent("jll-s2-slot1", [
+      st("carp","karaage",18,3,15),
+      st("baystars","karaage",12,8,4,"カープから球団変更")
+    ])
+  ]
+},
+{
+  league:"JLL", key:"s3", label:"JLL S3", suspended:true, teamCountNote:"4球団制・中止（15試合消化）",
+  schedule:{
+    regularSeason:"2025年9月16日～10月4日（中止）",
+    cs:"※中止",
+    japanSeries:"※中止",
+    allStar:"2025年10月7日～10月8日",
+    note:"JLLの継続が困難となったため、シーズンは中止となりました。"
+  },
+  champions:{cancelled:true},
+  entries:[
+    ent("jll-s3-swallows", [st("swallows","AriyaGX",15,10,5)], {
+      evaluator:"316fn100", rank:"1位予想",
+      stats:[["打撃","A"],["投手","B"],["守備","B"]],
+      keyPlayers:"Ariya, tamago, saegrall",
+      comment:"まず特筆すべきことは打撃力ですね。Ariya,tamago,saegrallの上位打線は今シーズン最高の打線であり、下位打線の厚みもしっかりあるなど隙がない打線ができていると思います。課題としては、守備力に定評のある選手が少ないため、守備力に不安が残るかなと思います。",
+      secondary:{evaluator:"yya0206", stats:[["打撃","A（ariya, tamago, saegrall）"],["投手","B（ariya, tamago, ryry）"]]}
+    }),
+    ent("jll-s3-buffaloes", [st("buffaloes","daibko",15,8,7)], {
+      evaluator:"316fn100", rank:"2位予想",
+      stats:[["打撃","B"],["投手","A"],["守備","B"]],
+      keyPlayers:"daibko, N1ghtgreg, pipestone",
+      comment:"打撃ではdaibko、投手ではN1ghtgreg、S2にて沢村賞をとった選手と本塁打王をとった選手がそろうという異例のチームである上、中軸にはkota,pipestoneなど、投打ともに厚みのあるチームであり、ペナントレースで上位を争うチームになると予想します。課題としては経験豊富な選手が少ないため、チームに乱れが出てこないかに不安があると思います。",
+      secondary:{evaluator:"yya0206", stats:[["打撃","C（daibko, N1ghtgreg, kota）"],["投手","B（daibko, N1ghtgreg, pipestone）"]]}
+    }),
+    ent("jll-s3-eagles", [st("eagles","kane_maaaru",15,8,7)], {
+      evaluator:"316fn100", rank:"3位予想",
+      stats:[["打撃","C"],["投手","A"],["守備","B"]],
+      keyPlayers:"yya, siitake, rozu",
+      comment:"打撃力、投手力ともにバランスの良い形で整っていると思います、キープレイヤーとなるyyaとsiitakeはS2にてベストナインに選ばれるなど実績のある選手がそろい、中軸にはrozu,fazemanがおり、抜け目のないチームだと思います。課題としてはモバイル勢が多いため、安定感に不安が残るかなと思います。",
+      secondary:{evaluator:"yya0206", stats:[["打撃","B（yya, siitake, rozu）"],["投手","C（yya, siitake）"]]}
+    }),
+    ent("jll-s3-dragons", [st("dragons","※掲載自粛",15,4,11)], {
+      evaluator:"316fn100", rank:"最下位予想",
+      stats:[["打撃","B"],["投手","B"],["守備","C"]],
+      keyPlayers:"germany, karaage, asj",
+      comment:"上位打線にはgermany_ballpberがいるなど、リーグ上位の選手がおり、インパクトのあるドラフトだなと思います。課題としては選手層に厚みがなく、投打ともに実績がある選手が少ないため、得点力にかける可能性があると思います。",
+      secondary:{evaluator:"yya0206", stats:[["打撃","A（germany, asj, osl）"],["投手","C（germany, karaage）"]]}
+    })
+  ]
+},
+{
+  league:"JNL", key:"s1", label:"JNL S1", suspended:false, teamCountNote:"4球団制",
+  schedule:{
+    regularSeason:"2025年10月20日～11月7日、11月13日～12月1日",
+    cs:"2025年12月4日～12月10日",
+    japanSeries:"2025年12月13日～12月19日",
+    allStar:"2025年11月10日"
+  },
+  champions:{
+    leagueChamp:{team:"lions",manager:"aozoraSKYLINE"},
+    csChamp:{team:"tigers",manager:"316fn100"},
+    jsChamp:{team:"lions",manager:"aozoraSKYLINE"}
+  },
+  entries:[
+    ent("jnl-s1-tigers", [st("tigers","316fn100",30,14,16)], {
+      evaluator:"4tvzz", rank:"1位予想",
+      stats:[["BATTING","S+"],["PITCHING","S"],["ACTIVE","S"]],
+      keyPlayers:"316fn100, daibko, tamago_712, doge_m1, smartjin7",
+      comment:"アジアで活躍した316fn100, tamago_712, D0ge_m1, smartjin7, vluniz, Akk_HAYATEzZが揃っている上にJLL S2ホームラン王のDAIBKO、アジアでホームラン王争いのtamago_712、アジアS3新人王の316fn100でアクティブも十分であり投手は316fn100, daibko, D0ge_m1, smartjin7の全員が上手く、抜け目のないチームであり相当なことがない限りは優勝はほぼ確定とまで言ってもいいだろう。しかも外国人が強い上、日本人も実績、実力ともに十分であるのがとても強い。"
+    }),
+    ent("jnl-s1-marines", [st("marines","Senalirs",30,6,24)], {
+      evaluator:"4tvzz", rank:"3位予想",
+      stats:[["BATTING","A+"],["PITCHING","S-"],["ACTIVE","A-"]],
+      keyPlayers:"senalirs, mk2mrnguyen, whiteferwith3r, hk1over, hamichi_0319",
+      comment:"投手の上手いSenalirsや打撃のMK2MRNGUYEN, WHITEFERWITH3R, HK1over、今回賭けに出た一時新人王候補のHAMICHI_0319をドラフト１位で取るなどとても面白いドラフトをした。またJLL S2で活躍したSHOGAVS08、代打の神様Kyuu_1145、相手を手玉に取る配球siiitake、狙った球は逃さないTas6602など外国人がいない際でも十分戦えて抜け目のないチームだ。しかし懸念点は「ドラフトの賭け」だ。ドラ１でHAMICHI_0319、ドラ２でasjdjqsdとどのような活躍をするかが予想が難しいので、そこがどうなるかによってチームの順位は左右しそうと予想する。"
+    }),
+    ent("jnl-s1-baystars", [st("baystars","kane_maaaru",30,16,14)], {
+      evaluator:"4tvzz", rank:"最下位予想",
+      stats:[["BATTING","S"],["PITCHING","A+"],["ACTIVE","B+"]],
+      keyPlayers:"N1ghtgreg, kunix_x7, pipestone, n1ckyouotw, rozu_1x",
+      comment:"アジアで活躍しているN1ghtGreg, Kunix_x7, N1ckyouoTWがおり、またCPBLで大活躍のPipestone、JLL S3では打率４割近くを残していたRozu_1x、新人王候補のPanponnsyukonnなど打撃にパンチ力があるチームとなっている。投手も沢村賞N1ghtGregや上手いKunix_x7, Pipestone, karaage等がいてバランスが良いチームだ。だがしかし懸念点として「アクティブ問題」「外国人不在」があると予想する。アクティブ問題としてN1ghtGreg, Fazemakuii, Rozu_1xは11-20で多いとは言えない。そして外国人不在はもしこれらの外国人が来ないと打線のパンチ力が下がり安定性が欠けると予想する。なので横浜はこの問題点をどう解決していくのかが鍵となるだろう。"
+    }),
+    ent("jnl-s1-lions", [st("lions","aozoraSKYLINE",30,24,6)], {
+      evaluator:"4tvzz", rank:"2位予想",
+      stats:[["BATTING","A+"],["PITCHING","S"],["ACTIVE","A+"]],
+      keyPlayers:"AriyaGX, yya0206, whiteferbeyn, aing5772, martin020000",
+      comment:"外国人でWhiteferbeyn, AING5772, MARTIN020000と投打両方上手い人が多く、日本人でもAriyaGX, yya0206, amenekoyumeneko等の実力十分な人が集まっていて良い感じ。ただしかし、懸念点として「調子の波」「アクティブ問題」がある。調子の波というのはどちらも実力は十分だが、AriyaGXはモバイルでとても安定しているとまでは言えない、そしてamenekoyumenekoもAPBLではとてもいい活躍をした分調子の波が激しいと予想する。またアクティブ問題としてyya0206の試合数もあるので、そこを外国人がどうリカバリーしていくかが重要になる。"
+    })
+  ]
+},
+{
+  league:"JNL", key:"s2_cancelled", label:"JNL S2", suspended:true, teamCountNote:"4球団制・中止（9試合消化）",
+  schedule:{
+    regularSeason:"2026年1月19日～1月29日（中止）",
+    cs:"※中止",
+    japanSeries:"※中止",
+    allStar:"※中止",
+    note:"外部リーグにおける大規模な問題の発生を受け、シーズンは中止となりました。"
+  },
+  champions:{cancelled:true},
+  entries:[
+    ent("jnl-s2c-fighters", [st("fighters","4tvzz",9,3,6)], {
+      evaluator:"316fn100", rank:"1位予想",
+      stats:[["batting","S"],["pitching","S"]],
+      keyPlayers:"4tvzz, ariya, washy, iotsaluv, beyn",
+      comment:"正直今回に関してはこのチームに並ぶドラフトはないと思います。4tvzz,Iotsaluv,ariya,beynをはじめとするアジアリーグなどで活躍する強力な打者陣とその援護を受ける、4tvzz,washyとJLLの沢村賞投手とアジアリーグサイヤング賞二度受賞のアジア最高の投手二人の二枚看板と投打ともに経験豊富な選手がそろい、下位打線にはameneko,pioなど一定の活躍を残せる選手がおり、個人的にはryuの新人王争いにも期待しています。流石にドラフトすぐにiotsaluvを獲得できたのはチートすぎじゃね。。。。"
+    }),
+    ent("jnl-s2c-dragons", [st("dragons","aozoraSKYLINE",9,7,2)], {
+      evaluator:"316fn100", rank:"2位予想",
+      stats:[["batting","A"],["pitching","A"]],
+      keyPlayers:"yya, G7, kanato, siitake, seok",
+      comment:"このチームも安定したドラフトをしたと思います。打撃陣にはyya,G7,kanato,seokと安定感のある選手たちが多くそろい、投手陣には同じくyya,siitake,kanemaruとJNL S1でも一定の活躍を残した選手を多く獲得できたと思います。下位打線にはemiemi,saegraal,kanemaruと下位打線でも十分に点を得ることのできる打力の高い選手がいると思います。懸念点としては経験が豊富な選手が少ないことと、打撃陣の爆発力に少し不安があるかなと思います。"
+    }),
+    ent("jnl-s2c-tigers", [st("tigers","Akk_HAYATEzZ",9,4,5)], {
+      evaluator:"316fn100", rank:"3位予想",
+      stats:[["batting","A～S"],["pitching","B"]],
+      keyPlayers:"Akkan, daibko, hamichi, kamome, vickey",
+      comment:"このチームは打撃に特化した攻撃力の高いチームだと思います。打撃陣にはS1のHR王daibko,Akkan,kamome,vickeyとチーム打撃力に関してはトップクラスの選手がそろっていると思います。投手陣に関してはdaibko以外投手経験の豊富な選手が少なく、いかに得点をとれるかの戦いになってくるかと思います。下位打線にはn3stusl,eight,kisinonと同じく安定した活躍が予想される打者がそろい、抜け目のない打線だと思います。懸念点としては中日と同じく経験豊富な選手が少なく、投手陣の層の薄さをどこまでカバーできるかが大事になると思います。"
+    }),
+    ent("jnl-s2c-buffaloes", [st("buffaloes","sspp_r",9,4,5)], {
+      evaluator:"316fn100", rank:"最下位予想",
+      stats:[["batting","B"],["pitching","B"]],
+      keyPlayers:"PANPON, TAMAGO, SENKAN, KUNIX",
+      comment:"このチームはモバイル勢が多く、最後まで順位がわからない未知数なチームだともいます。打撃陣にはS1にブレイクしたpanponにモバイルからpc勢に移行したtamago,senkannagato,kunixとネームド選手ながら成績の予想できない未知数な選手が多いと思います。投手陣に関してはtamago,kunix以外投手経験がある選手が少ないと思います。下位打線にはsubaraya,karaage,hibozuと経験豊富な選手が多くそろい、一定の打力があると思います。懸念点としては投打ともに計算できる選手が少なく、これからの補強やトレードが重要になってくるのではないかと思います。pmがいい子らしいから個人的に応援している"
+    })
+  ]
+},
+{
+  league:"JNL", key:"s2", label:"JNL S2", suspended:false, teamCountNote:"4球団制（S2は中断後の再開催）",
+  schedule:{
+    regularSeason:"2026年2月16日～3月6日、3月10日～3月29日",
+    cs:"2026年4月1日～4月10日",
+    japanSeries:"2026年4月14日～4月19日",
+    note:"このシーズンから、オールスターゲームは実施されなくなりました。"
+  },
+  champions:{
+    leagueChamp:{team:"carp",manager:"kane_maaaru"},
+    csChamp:{team:"fighters",manager:"※非公開"},
+    jsChamp:{team:"fighters",manager:"※非公開"}
+  },
+  entries:[
+    ent("jnl-s2-fighters", [st("fighters","※掲載自粛",30,15,15)]),
+    ent("jnl-s2-giants", [st("giants","daibko",30,15,15)]),
+    ent("jnl-s2-carp", [st("carp","kane_maaaru",30,20,10)]),
+    ent("jnl-s2-slot1", [
+      st("eagles","※掲載自粛",20,5,15),
+      st("eagles","Akk_HAYATEzZ",1,1,0,"監督代行"),
+      st("marines","Akk_HAYATEzZ",9,4,5,"イーグルスから球団変更・監督代行")
+    ])
+  ]
+},
+{
+  league:"JNL", key:"s3", label:"JNL S3", suspended:false, teamCountNote:"4球団制",
+  schedule:{
+    regularSeason:"2026年5月6日～5月26日、5月29日～6月20日",
+    cs:"2026年6月23日～6月24日",
+    japanSeries:"2026年6月27日～7月1日"
+  },
+  champions:{
+    leagueChamp:{team:"swallows",manager:"AriyaGX"},
+    csChamp:{team:"tigers",manager:"9aliu_s"},
+    jsChamp:{team:"swallows",manager:"AriyaGX"}
+  },
+  entries:[
+    ent("jnl-s3-lions", [st("lions","sspp_r",30,10,20)], {
+      evaluator:"yya0206", rank:"3位予想",
+      stats:[["batting","A+"],["pitching","B"]],
+      comment:"悪くないです！ていうかヤクルトよりも強いかもしれないです。ただし、本領を発揮できるか？で変わります。daibko, emiemi, gaixxxxxxxxはいいものの、復帰勢のsaegraal57, oslhvhqp4lがどう響くか？しかしNon jp枠が強いです！安定してます！投手面　あぶない！投げて上手く行った人はこの中だと daibkoだけです。あとはわかりません！怪しいです。どうなるか？実物です"
+    }),
+    ent("jnl-s3-tigers", [st("tigers","9aliu_s",30,15,15,"Akk_HAYATEzZと同一人物")], {
+      evaluator:"yya0206", rank:"4位予想",
+      stats:[["Batting","B"],["Pitching","B+"]],
+      keyPlayers:"9aliu_s, rozu_1x, nekomaguro111, shark091226, subaraya_ak25, L_vrk",
+      comment:"打撃面　悪くはないと思いますけど、他のチームと比べると劣ってる印象です。どの選手もインパクトのある者は少なく、ある意味バランスいいかもしれませんね。そしてNon jp枠のL_vrkは復帰勢の方であり活躍するかは未定(僕は期待してます)。投手面　大丈夫かとなるくらいちょっとギャンブルチック？なのかもしれません。ただ、期待されている rozu_1x, nekomaguro111などが盛大に活躍してくれて、このチームを支えてくれるのかもしれません。ただし、他のチームと比べるとやはり、劣ってる印象です(２回目)"
+    }),
+    ent("jnl-s3-swallows", [st("swallows","AriyaGX",30,18,12)], {
+      evaluator:"yya0206", rank:"2位予想",
+      stats:[["Batting","A"],["pitching","A"]],
+      keyPlayers:"AriyaGX, mediusakun, kamome_99, kosame55, yya0206, R1MLUVEN",
+      comment:"打撃面 全てのチームの中では一番バランスいいと思いますよ。ただ強いと言われたら？あんまりなのかも？しれないですね。比較的どの打線においてもバランスの良い感じであり、全員が上手く繋げることができたら特大な得点を得ることができるでしょう。投手面 AriyaGX, kosame55, yya0206と安定したピッチャーはいるものの、数が少ないです。足りなくなった時にどう出るか？ポイントかもしれませんね。"
+    }),
+    ent("jnl-s3-slot1", [
+      st("buffaloes","tamago_712",6,2,4),
+      st("eagles","tamago_712",10,6,4,"バッファローズから球団変更"),
+      st("eagles","asjdjqsd",14,9,5,"監督代行")
+    ], {
+      evaluator:"yya0206", rank:"1位予想",
+      stats:[["Batting","A"],["Pitching","S"]],
+      keyPlayers:"tamago_712, washywashingmachine, asjdjqsd, kota2010026, kunix_x7",
+      comment:"打撃面　いい意味でバランスめちゃくちゃ悪いです。まず上位打線でたまごやわっしーなどの主力選手がやってきて、さらにはKUNIX, OMなどより強力な選手がいる事で安定した打点稼ぎが期待できそうです。下位打線はもうほぼ捨てた感じに近いです。意外と覚醒したり？？投手面　全てのチームの中で一番強いです。アジア(GOOD BYE ASIA LEAGUE)のサイ・ヤング賞washyに加えて、防御率一割台だったtamago,さらにAsj, Eight_artist,さらにはKUNIXなど、投手面では不足することはほとんどないはずです。強い！（開幕前評価時点のチーム名：バッファローズ）"
+    })
+  ]
+},
+{
+  league:"JNL", key:"s4", label:"JNL S4", suspended:false, teamCountNote:"6球団制",
+  schedule:{
+    regularSeason:"2026年7月17日～8月5日、8月8日～8月29日",
+    cs:"2026年9月1日～9月5日",
+    japanSeries:"2026年9月8日～9月13日"
+  },
+  champions:{
+    leagueChamp:{team:"dragons",manager:"Rozu_1x"},
+    csChamp:{team:"tigers",manager:"Subaraya_ak25"},
+    jsChamp:{team:"dragons",manager:"Rozu_1x"}
+  },
+  entries:[
+    ent("jnl-s4-lions", [st("lions","aozoraSKYLINE",30,20,10)], {
+      evaluator:"4tvzz", rank:"3位予想",
+      stats:[["Batting","A+"],["Pitching","S+"]],
+      keyPlayers:"aozoraskyline, 1v6aq, 4tvzz",
+      comment:"PCとモバイルの中心人物が集まったオールスターのようなスターチーム、外国人は安定と破壊力があり投手も剛腕AriyaGXとkunix_x7、敵を手玉に取る投球1v6aq、元沢村賞の4tvzzとかなり安定している。問題点としてはkunix_x7の他に打てるバッターが出てこれば上位は盤石とするだろう。"
+    }),
+    ent("jnl-s4-fighters", [st("fighters","daibko",30,18,12)], {
+      evaluator:"4tvzz", rank:"2位予想",
+      stats:[["Batting","S-"],["Pitching","S"]],
+      keyPlayers:"daibko, mediusakun, kosame55",
+      comment:"Mobile中心の打撃陣で破壊力は十分であり、外国人も打のBlacklow47と投のBa2xkと安定しており上位争いは確実でありキーポイントのdaibkoがホームラン王のような打撃をすれば一位も夢ではない破壊力抜群のチーム。"
+    }),
+    ent("jnl-s4-tigers", [st("tigers","Subaraya_ak25",30,12,18)], {
+      evaluator:"4tvzz", rank:"最下位予想",
+      stats:[["Batting","A-"],["Pitching","B"]],
+      keyPlayers:"subaraya_ak25, kamome_99, SHOGAVS08",
+      comment:"復帰した選手が多く確実性には欠けるが破壊力はそこそこに備えている。問題点としてはその未知数の選手たちがどれほどの成績を残せるか不明なのと投手運用になってくるだろう。この予想を覆す成績を残すか期待。"
+    }),
+    ent("jnl-s4-dragons", [st("dragons","Rozu_1x",30,21,9)], {
+      evaluator:"4tvzz", rank:"1位予想",
+      stats:[["Batting","S-"],["Pitching","A+"]],
+      keyPlayers:"Rozu_1x, Panponnsyukonn, Piokun0913, Kakaobtro",
+      comment:"Nekomaguro111は投打共に安定した成績を残すと予想し、外国人も安定しているのでキーポイントが昨シーズン通り又はそれ以上の成績を残せば上位は盤石となると予想する。"
+    }),
+    ent("jnl-s4-baystars", [st("baystars","asjdjqsd",30,10,20)], {
+      evaluator:"4tvzz", rank:"5位予想",
+      stats:[["Batting","A+"],["Pitching","A"]],
+      keyPlayers:"yya0206, kdhlordd",
+      comment:"昔からの選手が多くメインで活躍したkdhlorddがいるのが大きい、問題点はkdhlordd以外の打撃陣の確実性と投手運用であり、昔からの知識を生かしどう采配していくかが鍵となるだろう。"
+    }),
+    ent("jnl-s4-slot1", [
+      st("marines","kane_maaaru",4,0,4),
+      st("braves","kane_maaaru",26,9,17,"マリーンズから球団変更")
+    ], {
+      evaluator:"4tvzz", rank:"4位予想",
+      stats:[["Batting","A+"],["Pitching","B+"]],
+      keyPlayers:"HAMICHI_0319, KOTA2010026",
+      comment:"かつて最強バッターであったHAMICHI_0319が復帰し外国人も安定が見込まれる。問題点としては投手をどう回していくかとHAMICHI_0319以外の安定して打てるバッターの確保が求められる。（開幕前評価時点のチーム名：マリーンズ）"
+    })
+  ]
+}
+];
+
+function w(name, team, note){ return {name, team, note: note || null}; }
+
+const INDIVIDUAL_TITLES = {
+"JLL-s1": {
+  intro: null, cancelled: false,
+  sections: [
+    { heading:"最優秀監督賞", winners:[ w("daibko","giants") ] },
+    { heading:"打者タイトル", subs:[
+        { label:"首位打者", winners:[ w("fv4xmei","swallows","打率.477") ] },
+        { label:"本塁打王", winners:[ w("vluniz","giants"), w("yya0206","eagles"), w("am6atubus","swallows") ], groupNote:"同率6本塁打" },
+        { label:"打点王", winners:[ w("vluniz","giants","23打点") ] }
+      ] },
+    { heading:"新人王", winners:[ w("kilisame2","giants"), w("osIhvhqp4i","eagles") ] },
+    { heading:"投手タイトル", subs:[
+        { label:"最優秀防御率", winners:[ w("BeYnlordd","giants","0.329") ] },
+        { label:"最多勝利", winners:[ w("fv4xmei","swallows","7勝") ] },
+        { label:"最多奪三振", winners:[ w("fv4xmei","swallows","117奪三振") ] }
+      ] },
+    { heading:"ベストナイン", bestNine:true, winners:[
+        w("fv4xmei","swallows"), w("vluniz","giants"), w("AriyaGX","giants"), w("yya0206","eagles"),
+        w("am6atubus","swallows"), w("Adelie_TR","giants"), w("tamago_712","swallows"), w("BeYnlordd","giants"), w("Chungsal2","lions")
+      ] },
+    { heading:"最優秀選手賞", winners:[ w("fv4xmei","swallows") ] },
+    { heading:"韓国人最優秀選手賞", winners:[ w("BeYnlordd","giants") ] },
+    { heading:"沢村賞", winners:[ w("BeYnlordd","giants") ] },
+    { heading:"BODが選ぶ!優秀選手賞!", subheading:"副タイトル（3人）", winners:[
+        w("Inakasyounenn","lions","fv4xmei推薦"), w("amenekoyumeneko","eagles","yya0206推薦"), w("N1ghtGreg","giants","AriyaGX推薦")
+      ] }
+  ]
+},
+"JLL-s2": {
+  intro:"このシーズンより、外国人選手を対象としたタイトルが変更されました。", cancelled:false,
+  sections: [
+    { heading:"最優秀監督賞", winners:[ w("N1ghtGreg","fighters","4tvzzと同一人物") ] },
+    { heading:"打者タイトル", subs:[
+        { label:"首位打者", winners:[ w("Germany_ballpber","tigers","打率.494／fv4xmeiと同一人物") ] },
+        { label:"本塁打王", winners:[ w("daibko","fighters","11本塁打") ] },
+        { label:"打点王", winners:[ w("daibko","fighters","23打点") ] }
+      ] },
+    { heading:"新人王", winners:[ w("Saegraal57","fighters") ] },
+    { heading:"投手タイトル", subs:[
+        { label:"最優秀防御率", winners:[ w("I_vrk","fighters","0.947点") ] },
+        { label:"最多勝利", winners:[ w("N1ghtGreg","fighters","8勝／4tvzzと同一人物") ] },
+        { label:"最多奪三振", winners:[ w("Senalirs","fighters","122奪三振") ] }
+      ] },
+    { heading:"ベストナイン", bestNine:true, winners:[
+        w("Germany_ballpber","tigers","fv4xmeiと同一人物"), w("daibko","fighters"), w("AriyaGX","marines"), w("I_vrk","fighters"),
+        w("Kunix_x7","tigers"), w("Saegraal57","fighters"), w("siiitake","marines"), w("yya0206","baystars"), w("N1ghtGreg","fighters","4tvzzと同一人物")
+      ] },
+    { heading:"最優秀選手賞", winners:[ w("Germany_ballpber","tigers","fv4xmeiと同一人物") ] },
+    { heading:"外国人最優秀選手賞", winners:[ w("I_vrk","fighters") ] },
+    { heading:"BODが選ぶ!優秀選手賞!", subheading:"副タイトル（4人）", winners:[
+        w("daibko","fighters","fv4xmei推薦"), w("asjdjqsd","marines","AriyaGX推薦"), w("ovoricerca","fighters","daibko推薦"), w("SHOGAVS08","baystars","yya0206推薦")
+      ] }
+  ]
+},
+"JLL-s3": { intro:null, cancelled:true, cancelReason:"シーズン中止に伴い、各種タイトルの受賞者は選出されませんでした。", sections:[] },
+"JNL-s1": {
+  intro:"このシーズンから、一部タイトルが大幅に見直されました。", cancelled:false,
+  sections: [
+    { heading:"沢村賞", winners:[ w("AriyaGX","lions") ] },
+    { heading:"最多奪三振", winners:[ w("AriyaGX","lions") ] },
+    { heading:"最優秀防御率", winners:[ w("AriyaGX","lions") ] },
+    { heading:"最多勝利", winners:[ w("AriyaGX","lions") ] },
+    { heading:"最多打点", winners:[ w("AriyaGX","lions") ] },
+    { heading:"最多本塁打", winners:[ w("daibko","tigers") ] },
+    { heading:"首位打者", winners:[ w("Panponnsyukonn","baystars") ] },
+    { heading:"新人王", winners:[ w("Panponnsyukonn","baystars"), w("G7cute","lions") ] },
+    { heading:"ベストナイン", bestNine:true, winners:[
+        w("AriyaGX","lions"), w("G7cute","lions"), w("Kota20010026","lions"), w("emiemi00332200","lions"), w("kanatononarou","lions"),
+        w("daibko","tigers"), w("Iotsaluv","tigers"), w("Akk_HAYATEzZ","tigers"), w("Panponnsyukonn","baystars")
+      ] },
+    { heading:"外国人MVP", winners:[ w("whiteferbeyn","lions") ] }
+  ]
+},
+"JNL-s2_cancelled": { intro:null, cancelled:true, cancelReason:"シーズン中止に伴い、各種タイトルの受賞者は選出されませんでした。", sections:[] },
+"JNL-s2": {
+  intro:"このシーズンから、ベストナインの選出対象は日本人選手のみとなりました。", cancelled:false,
+  sections: [
+    { heading:"沢村賞", winners:[ w("WashingMachineWashy","giants") ] },
+    { heading:"最多奪三振", winners:[ w("tamago_712","fighters") ] },
+    { heading:"最優秀防御率", winners:[ w("Rozu_1x","carp") ] },
+    { heading:"最多勝利", winners:[ w("tamago_712","fighters") ] },
+    { heading:"最多打点", winners:[ w("G7hcbb","fighters","G7cuteと同一人物") ] },
+    { heading:"最多本塁打", winners:[ w("Iotsaluv","giants") ] },
+    { heading:"首位打者", winners:[ w("Iotsaluv","giants") ] },
+    { heading:"新人王", winners:[ w("ryu91154","carp"), w("Nekomaguro111","fighters") ] },
+    { heading:"ベストナイン", bestNine:true, winners:[
+        w("Iotsaluv","giants"), w("daibko","giants"), w("WashingMachineWashy","giants"), w("emiemi00332200","marines"),
+        w("kamome_99","carp"), w("AriyaGX","carp"), w("Panponnsyukonn","carp"), w("G7hcbb","fighters","G7cuteと同一人物"), w("tamago_712","fighters")
+      ] },
+    { heading:"外国人MVP", winners:[ w("Kunix_x7","fighters") ] }
+  ]
+},
+"JNL-s3": {
+  intro:"このシーズンより、外国人選手を対象としたタイトルが変更されました。", cancelled:false,
+  sections: [
+    { heading:"沢村賞", winners:[ w("Rozu_1x","tigers") ] },
+    { heading:"最多奪三振", winners:[ w("Rozu_1x","tigers") ] },
+    { heading:"最優秀防御率", winners:[ w("yya0206","swallows") ] },
+    { heading:"最多勝利", winners:[ w("Kunix_x7","eagles") ] },
+    { heading:"最多本塁打", winners:[ w("Piokun0913","eagles") ] },
+    { heading:"首位打者", winners:[ w("oslhvhqp4i","lions") ] },
+    { heading:"最多打点", winners:[ w("mediusakun","eagles"), w("Shark091226","eagles") ], groupNote:"同率" },
+    { heading:"最多安打", winners:[ w("mediusakun","eagles") ] },
+    { heading:"新人王", winners:[ w("VorZaves","lions"), w("RENA_JP2","tigers") ] },
+    { heading:"ベストナイン", bestNine:true, winners:[
+        w("daibko","lions"), w("oslhvhqp4i","lions"), w("VorZaves","lions"), w("Nekomaguro111","tigers"), w("AriyaGX","swallows"),
+        w("mediusakun","swallows"), w("Shark091226","swallows"), w("kamome_99","swallows"), w("yya0206","swallows")
+      ] },
+    { heading:"外国人最優秀選手賞", subs:[
+        { label:"打者", winners:[ w("SeokNalDo","lions") ] },
+        { label:"投手", winners:[ w("Kunix_x7","eagles") ] }
+      ] }
+  ]
+},
+"JNL-s4": {
+  intro:null, cancelled:false,
+  sections: [
+    { heading:"沢村賞", winners:[ w("Rozu_1x","dragons") ] },
+    { heading:"最多奪三振", winners:[ w("Rozu_1x","dragons") ] },
+    { heading:"最優秀防御率", winners:[ w("Royals4ki","lions","Senalirsと同一人物") ] },
+    { heading:"最多勝利", winners:[ w("Rozu_1x","dragons") ] },
+    { heading:"最多本塁打", winners:[ w("daibko","fighters"), w("mediusakun","fighters") ], groupNote:"同率" },
+    { heading:"首位打者", winners:[ w("Nekomaguro111","dragons") ] },
+    { heading:"最多打点", winners:[ w("AriyaGX","lions"), w("takx156","dragons") ] },
+    { heading:"最多安打", winners:[ w("Panponnsyukonn","dragons") ] },
+    { heading:"新人王", winners:[ w("VorXeris","lions"), w("takx156","dragons") ] },
+    { heading:"ベストナイン", bestNine:true, winners:[
+        w("daibko","fighters"), w("mediusakun","fighters"), w("kanatonotudoi2","fighters","kanatononarouと同一人物"), w("Nekomaguro111","dragons"),
+        w("Panponnsyukonn","dragons"), w("takx156","dragons"), w("VorLexris","braves"), w("AriyaGX","lions"), w("Royals4ki","lions","Senalirsと同一人物")
+      ] },
+    { heading:"外国人最優秀選手賞", subs:[
+        { label:"打者", winners:[ w("ThePrimeBeyn","baystars") ] },
+        { label:"投手", winners:[ w("Kunix_x7","eagles") ] }
+      ] }
+  ]
+}
+};
+
+const MANAGER_ALIAS = {"9aliu_s":"Akk_HAYATEzZ"};
+function canonicalManager(name){
+  if(!name) return name;
+  return MANAGER_ALIAS[name] || name;
+}
+function isMasked(name){
+  return !!name && name.indexOf("掲載自粛") !== -1;
+}
+
+// Known "同一人物" (same real person, different in-game name) pairs noted alongside
+// individual title winners, used to connect a title to a manager's achievement history.
+const NAME_ALIASES = [
+  ["N1ghtGreg","4tvzz"],
+  ["Germany_ballpber","fv4xmei"],
+  ["G7hcbb","G7cute"],
+  ["Royals4ki","Senalirs"],
+  ["kanatonotudoi2","kanatononarou"],
+  ["9aliu_s","Akk_HAYATEzZ"],
+  ["amenekoyumeneko","amanekkoyumeneko"]
+];
+function aliasGroup(name){
+  const group = new Set([name]);
+  let changed = true;
+  while(changed){
+    changed = false;
+    NAME_ALIASES.forEach(([a,b])=>{
+      if(group.has(a) && !group.has(b)){ group.add(b); changed=true; }
+      if(group.has(b) && !group.has(a)){ group.add(a); changed=true; }
+    });
+  }
+  return group;
+}
+
+function flattenAwardWinners(data){
+  if(!data || data.cancelled) return [];
+  const rows = [];
+  data.sections.forEach(sec=>{
+    if(sec.subs){
+      const genericGroup = /タイトル$/.test(sec.heading);
+      sec.subs.forEach(sub=>{
+        rows.push({label: genericGroup ? sub.label : (sec.heading+"（"+sub.label+"）"), winners: sub.winners});
+      });
+    } else {
+      rows.push({label: sec.heading, winners: sec.winners});
+    }
+  });
+  return rows;
+}
+
+function teamAwardRows(league, seasonKey, teamId){
+  const data = INDIVIDUAL_TITLES[league+"-"+seasonKey];
+  const out = [];
+  flattenAwardWinners(data).forEach(row=>{
+    row.winners.filter(win=>win.team===teamId).forEach(win=>{
+      out.push({label: row.label, name: win.name});
+    });
+  });
+  return out;
+}
+
+function managerAwardRows(canonicalName){
+  const group = aliasGroup(canonicalName);
+  const out = [];
+  SEASONS.forEach(season=>{
+    const data = INDIVIDUAL_TITLES[season.league+"-"+season.key];
+    flattenAwardWinners(data).forEach(row=>{
+      row.winners.forEach(win=>{
+        if(group.has(win.name)){
+          out.push({season, label: row.label, name: win.name, team: win.team, note: win.note});
+        }
+      });
+    });
+  });
+  return out;
+}
+
+function totalOf(stints){
+  return stints.reduce((a,s)=>({games:a.games+s.games,wins:a.wins+s.wins,losses:a.losses+s.losses}),{games:0,wins:0,losses:0});
+}
+function pct(wins,losses){
+  const d = wins+losses;
+  if(d===0) return "—";
+  const v = wins/d;
+  return v.toFixed(3).replace(/^0/,"");
+}
+
+function teamTitles(teamId){
+  const rows = [];
+  SEASONS.forEach(season=>{
+    const c = season.champions;
+    if(!c || c.cancelled) return;
+    const titles = [];
+    if(c.leagueChamp && c.leagueChamp.team===teamId) titles.push("リーグ優勝");
+    if(c.csChamp && c.csChamp.team===teamId) titles.push("CS優勝");
+    if(c.jsChamp && c.jsChamp.team===teamId) titles.push("日本シリーズ優勝");
+    if(titles.length) rows.push({season, titles});
+  });
+  return rows;
+}
+
+function managerTitles(name){
+  const rows = [];
+  SEASONS.forEach(season=>{
+    const c = season.champions;
+    if(!c || c.cancelled) return;
+    const titles = [];
+    [["leagueChamp","リーグ優勝"],["csChamp","CS優勝"],["jsChamp","日本シリーズ優勝"]].forEach(([key,label])=>{
+      const champ = c[key];
+      if(champ && !isMasked(champ.manager) && canonicalManager(champ.manager)===name){
+        titles.push({label, team:champ.team});
+      }
+    });
+    if(titles.length) rows.push({season, titles});
+  });
+  return rows;
+}
+
+function renderTeamAchievements(teamId){
+  const rows = teamTitles(teamId);
+  if(!rows.length) return null;
+  const box = h("div",{class:"achievements"});
+  box.appendChild(h("h3",{},"タイトル獲得歴"));
+  rows.forEach(({season,titles})=>{
+    box.appendChild(h("div",{class:"achv-row"},
+      h("span",{class:"achv-badge"}, season.league+" "+season.label.replace(season.league+" ","")),
+      h("span",{}, titles.join("・"))
+    ));
+  });
+  return box;
+}
+
+function renderManagerAchievements(name){
+  const rows = managerTitles(name);
+  if(!rows.length) return null;
+  const box = h("div",{class:"achievements"});
+  box.appendChild(h("h3",{},"タイトル獲得歴"));
+  rows.forEach(({season,titles})=>{
+    const teamNames = [...new Set(titles.map(t=>TEAMS[t.team].name))].join("・");
+    box.appendChild(h("div",{class:"achv-row"},
+      h("span",{class:"achv-badge"}, season.league+" "+season.label.replace(season.league+" ","")),
+      h("span",{}, teamNames + "：" + titles.map(t=>t.label).join("・"))
+    ));
+  });
+  return box;
+}
+
+function renderTeamAwardRoster(teamId){
+  const rows = [];
+  SEASONS.forEach(season=>{
+    const awards = teamAwardRows(season.league, season.key, teamId);
+    if(awards.length) rows.push({season, awards});
+  });
+  if(!rows.length) return null;
+  const box = h("div",{class:"achievements"});
+  box.appendChild(h("h3",{},"個人タイトル受賞者"));
+  rows.forEach(({season,awards})=>{
+    const line = awards.map(a=> a.name+"（"+a.label+"）").join("、");
+    box.appendChild(h("div",{class:"achv-row"},
+      h("span",{class:"achv-badge"}, season.league+" "+season.label.replace(season.league+" ","")),
+      h("span",{}, line)
+    ));
+  });
+  return box;
+}
+
+function renderManagerAwardHistory(name){
+  const rows = managerAwardRows(name);
+  if(!rows.length) return null;
+  const bySeason = new Map();
+  rows.forEach(r=>{
+    const key = r.season.league+"-"+r.season.key;
+    if(!bySeason.has(key)) bySeason.set(key, {season:r.season, items:[]});
+    bySeason.get(key).items.push(r);
+  });
+  const box = h("div",{class:"achievements"});
+  box.appendChild(h("h3",{},"個人タイトル獲得歴"));
+  [...bySeason.values()].forEach(({season,items})=>{
+    const line = [...new Set(items.map(it=>it.label))].join("・");
+    box.appendChild(h("div",{class:"achv-row"},
+      h("span",{class:"achv-badge"}, season.league+" "+season.label.replace(season.league+" ","")),
+      h("span",{}, line)
+    ));
+  });
+  return box;
+}
+
+const FLAT = [];
+SEASONS.forEach(season=>{
+  season.entries.forEach(entry=>{
+    entry.stints.forEach((s,i)=>{
+      FLAT.push({league:season.league, seasonKey:season.key, seasonLabel:season.label, entryId:entry.id, stintIndex:i, ...s});
+    });
+  });
+});
+
+function seasonById(league,key){ return SEASONS.find(s=>s.league===league && s.key===key); }
+function entryRank(season, entryId){
+  const ranked = rankedEntries(season);
+  const idx = ranked.findIndex(e=>e.id===entryId);
+  return idx===-1 ? null : idx+1;
+}
+function rankedEntries(season){
+  return season.entries.map(e=>({...e, total: totalOf(e.stints)}))
+    .sort((a,b)=>{
+      const pa = a.total.wins/(a.total.wins+a.total.losses||1);
+      const pb = b.total.wins/(b.total.wins+b.total.losses||1);
+      return pb-pa;
+    });
+}
+
+let state = {view:"season", league:"JLL", seasonKey:"s1", detailTeam:null, detailManager:null, openEntry:null, itLeague:"JLL", itSeasonKey:"s1"};
+
+function h(tag, attrs, ...children){
+  const el = document.createElement(tag);
+  if(attrs) for(const k in attrs){
+    if(k==="class") el.className = attrs[k];
+    else if(k==="html") el.innerHTML = attrs[k];
+    else if(k.startsWith("on")) el.addEventListener(k.slice(2), attrs[k]);
+    else el.setAttribute(k, attrs[k]);
+  }
+  children.flat().forEach(c=>{
+    if(c===null||c===undefined) return;
+    if(typeof c === "string" || typeof c === "number") el.appendChild(document.createTextNode(c));
+    else el.appendChild(c);
+  });
+  return el;
+}
+
+function renderTabbar(){
+  const bar = document.getElementById("tabbar");
+  [...bar.children].forEach(btn=>{
+    btn.classList.toggle("active", btn.dataset.view===state.view);
+  });
+}
+
+function render(){
+  renderTabbar();
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+  if(state.view==="season") app.appendChild(renderSeasonView());
+  else if(state.view==="teams") app.appendChild(renderTeamsView());
+  else if(state.view==="managers") app.appendChild(renderManagersView());
+  else if(state.view==="teamDetail") app.appendChild(renderTeamDetail(state.detailTeam));
+  else if(state.view==="managerDetail") app.appendChild(renderManagerDetail(state.detailManager));
+  else if(state.view==="titles") app.appendChild(renderIndividualTitlesView());
+}
+
+function renderSeasonView(){
+  const wrap = h("div",{});
+  const leagues = ["JLL","JNL"];
+  const lbar = h("div",{class:"leaguebar"});
+  leagues.forEach(lg=>{
+    lbar.appendChild(h("button",{class:"leaguebtn"+(state.league===lg?" active":""), onclick:()=>{
+      state.league = lg;
+      state.seasonKey = SEASONS.find(s=>s.league===lg).key;
+      render();
+    }}, lg));
+  });
+  wrap.appendChild(lbar);
+
+  const sbar = h("div",{class:"seasonbar"});
+  SEASONS.filter(s=>s.league===state.league).forEach(s=>{
+    const btn = h("button",{class:"seasonbtn"+(state.seasonKey===s.key?" active":""), onclick:()=>{
+      state.seasonKey = s.key; render();
+    }}, s.label.replace(s.league+" ",""));
+    if(s.suspended) btn.appendChild(h("span",{class:"flag"}," 中止"));
+    sbar.appendChild(btn);
+  });
+  wrap.appendChild(sbar);
+
+  const season = seasonById(state.league, state.seasonKey);
+  wrap.appendChild(h("div",{class:"season-heading"},
+    h("h2",{}, season.label),
+    season.suspended ? h("span",{class:"tag"},"中止") : null
+  ));
+  wrap.appendChild(h("p",{class:"season-meta"}, season.teamCountNote));
+  wrap.appendChild(renderScheduleBox(season));
+
+  const ranked = rankedEntries(season);
+  const table = h("table",{class:"standings"});
+  table.appendChild(h("thead",{},h("tr",{},
+    h("th",{},""), h("th",{},"球団"), h("th",{class:"num"},"試合"), h("th",{class:"num"},"勝"),
+    h("th",{class:"num"},"敗"), h("th",{class:"num"},"勝率")
+  )));
+  const tbody = h("tbody",{});
+  ranked.forEach((e,i)=>{
+    const last = e.stints[e.stints.length-1];
+    const team = TEAMS[last.team];
+    const changed = e.stints.length>1;
+    const maskedAny = e.stints.some(s=>isMasked(s.manager));
+    const displayManager = maskedAny ? "※非公開" : last.manager;
+    const tr = h("tr",{onclick:()=>openEntryPanel(season, e.id)},
+      h("td",{class:"rankcol"}, i+1),
+      h("td",{}, h("div",{class:"teamcell"},
+        h("div",{class:"swatch", style:`background:${team.color}`}),
+        h("div",{},
+          h("div",{class:"teamname"}, team.name, changed?h("span",{class:"arrow"},"（球団変更あり）"):null, e.media?h("span",{class:"media-dot",title:"メディア評価あり"}):null),
+          h("div",{class:"manager"+(maskedAny?" masked":"")}, displayManager)
+        )
+      )),
+      h("td",{class:"num"}, e.total.games),
+      h("td",{class:"num"}, e.total.wins),
+      h("td",{class:"num"}, e.total.losses),
+      h("td",{class:"num pct"}, pct(e.total.wins,e.total.losses))
+    );
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+  wrap.appendChild(renderTitlesSection(season));
+  return wrap;
+}
+
+function renderScheduleBox(season){
+  const s = season.schedule;
+  if(!s) return h("div",{});
+  const box = h("div",{class:"schedule-box"});
+  const rows = [
+    ["レギュラーシーズン", s.regularSeason],
+    ["クライマックスシリーズ", s.cs],
+    ["日本シリーズ", s.japanSeries]
+  ];
+  if(s.allStar) rows.push(["オールスターゲーム", s.allStar]);
+  rows.forEach(([lbl,val])=>{
+    if(!val) return;
+    box.appendChild(h("div",{class:"schedule-row"}, h("span",{class:"lbl"}, lbl), h("span",{class:"val"}, val)));
+  });
+  if(s.note) box.appendChild(h("p",{class:"schedule-note"}, "※" + s.note));
+  return box;
+}
+
+function renderTitlesSection(season){
+  const box = h("div",{class:"titles-section"});
+  box.appendChild(h("h3",{},"タイトル"));
+  const c = season.champions;
+  if(!c || c.cancelled){
+    box.appendChild(h("p",{class:"titlecard cancelled"},"※中止のため優勝球団なし"));
+    return box;
+  }
+  const grid = h("div",{class:"titlegrid"});
+  [["リーグ優勝", c.leagueChamp], ["CS優勝", c.csChamp], ["日本シリーズ優勝", c.jsChamp]].forEach(([label,champ])=>{
+    if(!champ){ return; }
+    const t = TEAMS[champ.team];
+    const masked = isMasked(champ.manager);
+    const card = h("div",{class:"titlecard"},
+      h("div",{class:"ttl-label"}, label),
+      h("div",{class:"ttl-team"}, h("div",{class:"swatch", style:`background:${t.color}`}), t.name)
+    );
+    const mgrLine = masked
+      ? h("div",{class:"ttl-manager masked-link", onclick:()=>{ showNoticePanel("※非公開","この監督は、JLLまたはJNLにおいて処分を受けたため、氏名の掲載を自粛しております。"); }}, "※非公開")
+      : h("div",{class:"ttl-manager", style:"cursor:pointer;", onclick:()=>{ state.view="managerDetail"; state.detailManager=canonicalManager(champ.manager); render(); }}, champ.manager);
+    card.appendChild(mgrLine);
+    grid.appendChild(card);
+  });
+  box.appendChild(grid);
+  return box;
+}
+
+function openEntryPanel(season, entryId){
+  const entry = season.entries.find(e=>e.id===entryId);
+  const total = totalOf(entry.stints);
+  const last = entry.stints[entry.stints.length-1];
+  const team = TEAMS[last.team];
+  const rank = entryRank(season, entryId);
+  const overlay = h("div",{class:"panel-overlay", onclick:(ev)=>{ if(ev.target===overlay) overlay.remove(); }});
+  const panel = h("div",{class:"panel"});
+  panel.appendChild(h("div",{class:"panel-head"},
+    h("div",{class:"panel-title"},
+      h("div",{class:"swatch", style:`background:${team.color}`}),
+      h("div",{}, h("h3",{}, team.name), h("p",{class:"panel-sub"}, season.label+" ・ "+rank+"位（"+total.wins+"勝"+total.losses+"敗）"))
+    ),
+    h("button",{class:"panel-close", onclick:()=>overlay.remove()}, "×")
+  ));
+
+  const stintList = h("ul",{class:"stintlist"});
+  entry.stints.forEach(s=>{
+    const t = TEAMS[s.team];
+    stintList.appendChild(h("li",{},
+      h("span",{class:"st-team"}, t.name, s.note?h("span",{class:"st-note"},s.note):null),
+      h("span",{class:"st-manager"}, isMasked(s.manager)?"※非公開":s.manager+(s.manager && s.manager.indexOf("監督代行")===-1 && false?"":"")),
+      h("span",{class:"st-rec"}, s.games+"試合 "+s.wins+"勝"+s.losses+"敗（"+pct(s.wins,s.losses)+"）")
+    ));
+  });
+  panel.appendChild(stintList);
+
+  panel.appendChild(h("div",{class:"totalbox"},
+    h("div",{}, h("div",{class:"lbl", style:"font-size:11px;color:var(--ink-mute)"},"通算"), h("div",{class:"big"}, total.games+"試合 "+total.wins+"勝"+total.losses+"敗")),
+    h("div",{class:"big"}, pct(total.wins,total.losses))
+  ));
+
+  const mediaBlock = h("div",{class:"media-block"});
+  mediaBlock.appendChild(h("h4",{},"開幕前メディア評価"));
+  if(entry.media){
+    mediaBlock.appendChild(renderMediaEval(entry.media));
+    if(entry.media.secondary){
+      mediaBlock.appendChild(renderMediaEval(entry.media.secondary, true));
+    }
+  } else {
+    mediaBlock.appendChild(h("p",{class:"no-media"},"このチームの評価記事は登録されていません。"));
+  }
+  panel.appendChild(mediaBlock);
+
+  const teamIdsInEntry = [...new Set(entry.stints.map(s=>s.team))];
+  let awardRows = [];
+  teamIdsInEntry.forEach(tid=>{ awardRows = awardRows.concat(teamAwardRows(season.league, season.key, tid)); });
+  const titleBlock = h("div",{class:"media-block"});
+  titleBlock.appendChild(h("h4",{},"個人タイトル受賞者"));
+  if(awardRows.length){
+    awardRows.forEach(r=>{
+      titleBlock.appendChild(h("div",{class:"award-winner"},
+        h("span",{class:"wname"}, r.name),
+        h("span",{class:"wteam"}, r.label)
+      ));
+    });
+  } else {
+    titleBlock.appendChild(h("p",{class:"no-media"},"このチームからの個人タイトル受賞者は登録されていません。"));
+  }
+  panel.appendChild(titleBlock);
+
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+}
+
+function showNoticePanel(title, message){
+  const overlay = h("div",{class:"panel-overlay", onclick:(ev)=>{ if(ev.target===overlay) overlay.remove(); }});
+  const panel = h("div",{class:"panel", style:"max-width:420px;"});
+  panel.appendChild(h("div",{class:"panel-head"},
+    h("div",{class:"panel-title"}, h("h3",{}, title)),
+    h("button",{class:"panel-close", onclick:()=>overlay.remove()}, "×")
+  ));
+  panel.appendChild(h("p",{class:"media-comment"}, message));
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+}
+
+function renderMediaEval(m, isSecondary){
+  const box = h("div",{class:"media-eval"});
+  const top = h("div",{class:"media-top"});
+  if(m.rank) top.appendChild(h("span",{class:"rankpill"}, m.rank));
+  top.appendChild(h("span",{class:"evaluator"}, "評価者：" + m.evaluator));
+  box.appendChild(top);
+  if(m.stats && m.stats.length){
+    const row = h("div",{class:"statrow"});
+    m.stats.forEach(([label,val])=>{
+      row.appendChild(h("span",{}, label+" ", h("b",{}, val)));
+    });
+    box.appendChild(row);
+  }
+  if(m.keyPlayers) box.appendChild(h("p",{class:"keyplayers"}, "主要選手：" + m.keyPlayers));
+  if(m.comment) box.appendChild(h("p",{class:"media-comment"}, m.comment));
+  return box;
+}
+
+function renderIndividualTitlesView(){
+  const wrap = h("div",{});
+  wrap.appendChild(h("h2",{class:"sectiontitle"},"個人タイトル"));
+  wrap.appendChild(h("p",{class:"sectiondesc"},"シーズンごとに、当時の選手が獲得した個人タイトルを確認できます。"));
+  wrap.appendChild(h("div",{class:"disclaimer-box"},"※タイトル受賞者の中には、後にJLLまたはJNLにおいて処分を受けた人物も含まれますが、当時の成績・功績を尊重し、そのまま掲載しています。"));
+
+  const lbar = h("div",{class:"leaguebar"});
+  ["JLL","JNL"].forEach(lg=>{
+    lbar.appendChild(h("button",{class:"leaguebtn"+(state.itLeague===lg?" active":""), onclick:()=>{
+      state.itLeague = lg;
+      state.itSeasonKey = SEASONS.find(s=>s.league===lg).key;
+      render();
+    }}, lg));
+  });
+  wrap.appendChild(lbar);
+
+  const sbar = h("div",{class:"seasonbar"});
+  SEASONS.filter(s=>s.league===state.itLeague).forEach(s=>{
+    const btn = h("button",{class:"seasonbtn"+(state.itSeasonKey===s.key?" active":""), onclick:()=>{
+      state.itSeasonKey = s.key; render();
+    }}, s.label.replace(s.league+" ",""));
+    if(s.suspended) btn.appendChild(h("span",{class:"flag"}," 中止"));
+    sbar.appendChild(btn);
+  });
+  wrap.appendChild(sbar);
+
+  const season = seasonById(state.itLeague, state.itSeasonKey);
+  const data = INDIVIDUAL_TITLES[state.itLeague+"-"+state.itSeasonKey];
+  wrap.appendChild(h("div",{class:"season-heading"}, h("h2",{}, season.label), season.suspended ? h("span",{class:"tag"},"中止") : null));
+
+  if(!data || data.cancelled){
+    wrap.appendChild(h("p",{class:"cancelled-note"}, "※" + ((data && data.cancelReason) || "このシーズンのタイトルデータは登録されていません。")));
+    return wrap;
+  }
+  if(data.intro) wrap.appendChild(h("p",{class:"intro-note"}, "※" + data.intro));
+
+  data.sections.forEach(sec=>{
+    wrap.appendChild(renderAwardSection(sec));
+  });
+  return wrap;
+}
+
+function renderAwardWinner(win){
+  const t = TEAMS[win.team];
+  return h("div",{class:"award-winner"},
+    h("span",{class:"swatch", style:`background:${t.color}`}),
+    h("span",{class:"wname"}, win.name),
+    h("span",{class:"wteam"}, "（"+t.name+"）"),
+    win.note ? h("span",{class:"wnote"}, "※"+win.note) : null
+  );
+}
+
+function renderAwardSection(sec){
+  const box = h("div",{class:"award-section"});
+  box.appendChild(h("h4",{}, sec.heading));
+  if(sec.subheading) box.appendChild(h("p",{class:"award-subheading"}, sec.subheading));
+
+  if(sec.bestNine){
+    const grid = h("div",{class:"bestnine-grid"});
+    sec.winners.forEach(win=>grid.appendChild(renderAwardWinner(win)));
+    box.appendChild(grid);
+  } else if(sec.subs){
+    sec.subs.forEach(sub=>{
+      const subBox = h("div",{class:"award-sub"});
+      subBox.appendChild(h("div",{class:"award-sub-label"}, sub.label));
+      sub.winners.forEach(win=>subBox.appendChild(renderAwardWinner(win)));
+      if(sub.groupNote) subBox.appendChild(h("p",{class:"award-groupnote"}, "※"+sub.groupNote));
+      box.appendChild(subBox);
+    });
+  } else {
+    sec.winners.forEach(win=>box.appendChild(renderAwardWinner(win)));
+    if(sec.groupNote) box.appendChild(h("p",{class:"award-groupnote"}, "※"+sec.groupNote));
+  }
+  return box;
+}
+
+function renderTeamsView(){
+  const wrap = h("div",{});
+  wrap.appendChild(h("h2",{class:"sectiontitle"},"球団一覧"));
+  wrap.appendChild(h("p",{class:"sectiondesc"},"球団をクリックすると、歴代の監督とシーズンごとの成績を確認できます。"));
+  const grid = h("div",{class:"teamgrid"});
+  const teamRows = Object.keys(TEAMS).map(id=>{
+    const stints = FLAT.filter(f=>f.team===id);
+    const total = totalOf(stints);
+    const winPct = total.games>0 ? total.wins/(total.wins+total.losses||1) : -1;
+    return {id, total, winPct};
+  }).sort((a,b)=> b.winPct - a.winPct);
+  teamRows.forEach(({id,total})=>{
+    const t = TEAMS[id];
+    grid.appendChild(h("button",{class:"teamcard", onclick:()=>{ state.view="teamDetail"; state.detailTeam=id; render(); }},
+      h("div",{class:"bar", style:`background:${t.color}`}),
+      h("div",{class:"body"},
+        h("p",{class:"name"}, t.name),
+        h("p",{class:"stat"}, total.games>0 ? (total.wins+"勝"+total.losses+"敗　通算勝率"+pct(total.wins,total.losses)) : "出場記録なし")
+      )
+    ));
+  });
+  wrap.appendChild(grid);
+  return wrap;
+}
+
+function renderTeamDetail(teamId){
+  const wrap = h("div",{});
+  const t = TEAMS[teamId];
+  wrap.appendChild(h("button",{class:"backlink", onclick:()=>{ state.view="teams"; render(); }}, "← 球団一覧に戻る"));
+  wrap.appendChild(h("div",{class:"detail-head"},
+    h("div",{class:"swatch", style:`background:${t.color}`}),
+    h("h2",{}, t.name)
+  ));
+
+  const stints = FLAT.filter(f=>f.team===teamId).sort((a,b)=>{
+    if(a.league!==b.league) return a.league<b.league?-1:1;
+    return a.seasonKey<b.seasonKey?-1:1;
+  });
+  const total = totalOf(stints);
+
+  wrap.appendChild(h("div",{class:"summarystrip"},
+    h("div",{class:"sumcard"}, h("div",{class:"lbl"},"通算試合"), h("div",{class:"val"}, total.games)),
+    h("div",{class:"sumcard"}, h("div",{class:"lbl"},"通算勝敗"), h("div",{class:"val"}, total.wins+"-"+total.losses)),
+    h("div",{class:"sumcard"}, h("div",{class:"lbl"},"通算勝率"), h("div",{class:"val"}, pct(total.wins,total.losses)))
+  ));
+
+  const achv = renderTeamAchievements(teamId);
+  if(achv) wrap.appendChild(achv);
+  const roster = renderTeamAwardRoster(teamId);
+  if(roster) wrap.appendChild(roster);
+
+  if(stints.length===0){
+    wrap.appendChild(h("p",{class:"no-media"},"このチームでの出場記録は登録されていません。"));
+    return wrap;
+  }
+
+  const table = h("table",{class:"history"});
+  table.appendChild(h("thead",{},h("tr",{},
+    h("th",{},"リーグ・シーズン"), h("th",{},"監督"), h("th",{class:"num"},"試合"),
+    h("th",{class:"num"},"勝"), h("th",{class:"num"},"敗"), h("th",{class:"num"},"勝率"), h("th",{class:"num"},"順位")
+  )));
+  const tbody = h("tbody",{});
+  stints.forEach(s=>{
+    const season = seasonById(s.league, s.seasonKey);
+    const rank = entryRank(season, s.entryId);
+    const masked = isMasked(s.manager);
+    const tr = h("tr",{class:"clickable"},
+      h("td",{}, h("span",{class:"leaguechip"}, s.league), " " + season.label.replace(s.league+" ","")),
+      h("td",{}, masked ? h("span",{class:"manager masked"},"※非公開") : s.manager + (s.note && s.note.indexOf("監督代行")!==-1 ? "（代行）":"")),
+      h("td",{class:"num"}, s.games),
+      h("td",{class:"num"}, s.wins),
+      h("td",{class:"num"}, s.losses),
+      h("td",{class:"num"}, pct(s.wins,s.losses)),
+      h("td",{class:"num"}, rank ? rank+"位" : "—")
+    );
+    if(masked){
+      tr.addEventListener("click",()=>{
+        showNoticePanel("※非公開", "この監督は、JLLまたはJNLにおいて処分を受けたため、氏名の掲載を自粛しております。");
+      });
+    } else {
+      tr.addEventListener("click",()=>{ state.view="managerDetail"; state.detailManager=canonicalManager(s.manager); render(); });
+    }
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+
+  const managers = [...new Set(stints.map(s=>isMasked(s.manager)?"※非公開":canonicalManager(s.manager)))];
+  wrap.appendChild(h("h3",{style:"font-family:var(--font-display);font-size:16px;font-weight:600;margin:0 0 4px;"}, "歴代監督"));
+  const mlist = h("div",{class:"managerlist"});
+  managers.forEach(m=>{
+    if(m==="※非公開"){
+      mlist.appendChild(h("button",{class:"managerchip", style:"opacity:0.75;", onclick:()=>{
+        showNoticePanel("※非公開", "この監督は、JLLまたはJNLにおいて処分を受けたため、氏名の掲載を自粛しております。");
+      }}, m));
+    } else {
+      mlist.appendChild(h("button",{class:"managerchip", onclick:()=>{ state.view="managerDetail"; state.detailManager=m; render(); }}, m));
+    }
+  });
+  wrap.appendChild(mlist);
+
+  return wrap;
+}
+
+function allManagerRows(){
+  const set = new Set();
+  FLAT.forEach(s=>{
+    if(!isMasked(s.manager)) set.add(canonicalManager(s.manager));
+  });
+  return [...set].map(name=>{
+    const stints = FLAT.filter(s=>!isMasked(s.manager) && canonicalManager(s.manager)===name);
+    const total = totalOf(stints);
+    const winPct = total.wins/(total.wins+total.losses||1);
+    return {name, total, winPct};
+  }).sort((a,b)=> b.winPct - a.winPct);
+}
+
+function renderManagersView(){
+  const wrap = h("div",{});
+  wrap.appendChild(h("h2",{class:"sectiontitle"},"監督"));
+  wrap.appendChild(h("p",{class:"sectiondesc"},"監督名をクリックすると、担当した全球団・全シーズンの成績を確認できます。"));
+  const rows = allManagerRows();
+  const input = h("input",{class:"searchbox", type:"text", placeholder:"監督名で検索"});
+  wrap.appendChild(input);
+  wrap.appendChild(h("p",{class:"hint"}, rows.length + "名の監督が登録されています（※掲載自粛の監督は除きます）"));
+  const grid = h("div",{class:"managergrid"});
+  function draw(filter){
+    grid.innerHTML = "";
+    rows.filter(r=>!filter || r.name.toLowerCase().includes(filter.toLowerCase())).forEach(r=>{
+      grid.appendChild(h("button",{class:"managercard", onclick:()=>{ state.view="managerDetail"; state.detailManager=r.name; render(); }},
+        h("p",{class:"name"}, r.name),
+        h("p",{class:"stat"}, r.total.wins+"勝"+r.total.losses+"敗　通算勝率"+pct(r.total.wins,r.total.losses))
+      ));
+    });
+  }
+  draw("");
+  input.addEventListener("input",()=>draw(input.value));
+  wrap.appendChild(grid);
+  return wrap;
+}
+
+function renderManagerDetail(name){
+  const wrap = h("div",{});
+  wrap.appendChild(h("button",{class:"backlink", onclick:()=>{ state.view="managers"; render(); }}, "← 監督一覧に戻る"));
+  wrap.appendChild(h("div",{class:"detail-head"}, h("h2",{}, name)));
+
+  const stints = FLAT.filter(s=>!isMasked(s.manager) && canonicalManager(s.manager)===name)
+    .sort((a,b)=>{
+      if(a.league!==b.league) return a.league<b.league?-1:1;
+      return a.seasonKey<b.seasonKey?-1:1;
+    });
+  const total = totalOf(stints);
+
+  wrap.appendChild(h("div",{class:"summarystrip"},
+    h("div",{class:"sumcard"}, h("div",{class:"lbl"},"通算試合"), h("div",{class:"val"}, total.games)),
+    h("div",{class:"sumcard"}, h("div",{class:"lbl"},"通算勝敗"), h("div",{class:"val"}, total.wins+"-"+total.losses)),
+    h("div",{class:"sumcard"}, h("div",{class:"lbl"},"通算勝率"), h("div",{class:"val"}, pct(total.wins,total.losses))),
+    h("div",{class:"sumcard"}, h("div",{class:"lbl"},"担当球団数"), h("div",{class:"val"}, new Set(stints.map(s=>s.team)).size))
+  ));
+
+  const achv = renderManagerAchievements(name);
+  if(achv) wrap.appendChild(achv);
+  const awardHistory = renderManagerAwardHistory(name);
+  if(awardHistory) wrap.appendChild(awardHistory);
+
+  const table = h("table",{class:"history"});
+  table.appendChild(h("thead",{},h("tr",{},
+    h("th",{},"リーグ・シーズン"), h("th",{},"球団"), h("th",{class:"num"},"試合"),
+    h("th",{class:"num"},"勝"), h("th",{class:"num"},"敗"), h("th",{class:"num"},"勝率"), h("th",{class:"num"},"順位")
+  )));
+  const tbody = h("tbody",{});
+  stints.forEach(s=>{
+    const season = seasonById(s.league, s.seasonKey);
+    const rank = entryRank(season, s.entryId);
+    const t = TEAMS[s.team];
+    const tr = h("tr",{class:"clickable", onclick:()=>{ state.view="teamDetail"; state.detailTeam=s.team; render(); }},
+      h("td",{}, h("span",{class:"leaguechip"}, s.league), " " + season.label.replace(s.league+" ","")),
+      h("td",{}, h("div",{class:"teamcell"}, h("div",{class:"swatch", style:`background:${t.color};height:18px`}), t.name+(s.note && s.note.indexOf("監督代行")!==-1?"（代行）":""))),
+      h("td",{class:"num"}, s.games),
+      h("td",{class:"num"}, s.wins),
+      h("td",{class:"num"}, s.losses),
+      h("td",{class:"num"}, pct(s.wins,s.losses)),
+      h("td",{class:"num"}, rank ? rank+"位" : "—")
+    );
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+  return wrap;
+}
+
+document.getElementById("tabbar").addEventListener("click",(e)=>{
+  const btn = e.target.closest("button[data-view]");
+  if(!btn) return;
+  state.view = btn.dataset.view;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
